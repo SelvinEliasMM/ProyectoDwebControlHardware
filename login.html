@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>TechFix ERP | Iniciar Sesión</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+    <link rel="stylesheet" href = "CSS/estiloLogin.css">
+</head>
+<body>
+    <div class="login-box">
+        <h1>TechFix ERP</h1>
+        <p style="color: #9ca3af; margin-bottom: 20px;">Ingresa tus credenciales</p>
+        <form id="formLogin">
+            <input type="email" id="correo" placeholder="Correo electrónico" required>
+            <input type="password" id="password" placeholder="Contraseña" required>
+            <button type="submit">Entrar al Sistema</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const credenciales = {
+                correo: document.getElementById('correo').value,
+                passwordHash: document.getElementById('password').value
+            };
+
+            fetch('http://localhost:8080/api/usuarios/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(credenciales)
+            })
+            .then(response => {
+                if(!response.ok) throw new Error("Credenciales inválidas");
+                return response.json();
+            })
+            .then(usuario => {
+                // GUARDAR EL USUARIO EN LA MEMORIA DEL NAVEGADOR
+                localStorage.setItem('usuarioActivo', JSON.stringify(usuario));
+                window.location.href = 'index.html'; // Redirigir al dashboard
+            })
+            .catch(error => {
+                alert('Correo o contraseña incorrectos.');
+            });
+        });
+    </script>
+</body>
+</html>

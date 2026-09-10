@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ERP Hardware | Equipos</title>
+    <link rel="stylesheet" href="/CSS/estilos.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">TechFix ERP</div>
+        <div class="menu-item"><a href="index.html" style="color:inherit; text-decoration:none;">Dashboard</a></div>
+        <div class="menu-item active">Registro de Equipos</div>
+        <div class="menu-item"><a href="clientes.html" style="color:inherit; text-decoration:none;">Clientes</a></div>
+      
+    </div>
+    
+    <div class="main-content">
+        <h2>Registrar Nuevo Equipo</h2>
+        <div class="card">
+            <form id="formEquipo">
+                <select id="clienteSelect" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;">
+                    <option value="">Cargando clientes...</option>
+                </select>
+                
+                <input type="text" id="tipo" placeholder="Tipo (ej. Laptop, Desktop)" required style="padding:8px; margin:5px; border-radius:5px;">
+                <input type="text" id="marca" placeholder="Marca y Modelo" required style="padding:8px; margin:5px; border-radius:5px;">
+                <input type="text" id="serie" placeholder="Número de Serie" required style="padding:8px; margin:5px; border-radius:5px;">
+                <textarea id="caracteristicas" placeholder="Características (RAM, Disco...)" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;"></textarea>
+                
+                <button type="submit" style="padding:9px; background:#3b82f6; color:white; border:none; cursor:pointer; border-radius:5px;">Guardar Equipo</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Llenar el menú desplegable con los clientes existentes
+        window.onload = function() {
+            fetch('http://localhost:8080/api/clientes')
+                .then(response => response.json())
+                .then(clientes => {
+                    const select = document.getElementById('clienteSelect');
+                    select.innerHTML = '<option value="">Seleccione un cliente...</option>';
+                    clientes.forEach(cliente => {
+                        select.innerHTML += `<option value="${cliente.idCliente}">${cliente.nombreCliente}</option>`;
+                    });
+                });
+        };
+
+        // Guardar el equipo
+        document.getElementById('formEquipo').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+       
+            const nuevoEquipo = {
+                idCliente: { idCliente: document.getElementById('clienteSelect').value },
+                tipoEquipo: document.getElementById('tipo').value,
+                marcaModelo: document.getElementById('marca').value,
+                numeroSerie: document.getElementById('serie').value,
+                caracteristicasHardware: document.getElementById('caracteristicas').value
+            };
+
+            fetch('http://localhost:8080/api/equipos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoEquipo)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('¡Equipo guardado con éxito!');
+                document.getElementById('formEquipo').reset();
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

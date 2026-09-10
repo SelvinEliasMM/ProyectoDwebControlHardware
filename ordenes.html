@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ERP Hardware | Nueva Orden</title>
+    <link rel="stylesheet" href="/CSS/estilos.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">TechFix ERP</div>
+        <div class="menu-item"><a href="index.html" style="color:inherit; text-decoration:none;">Dashboard</a></div>
+        <div class="menu-item active">Nueva Orden</div>
+    </div>
+    
+    <div class="main-content">
+        <h2>Crear Orden de Trabajo</h2>
+        <div class="card">
+            <form id="formOrden">
+                <select id="equipoSelect" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;">
+                    <option value="">Cargando equipos...</option>
+                </select>
+                
+                <select id="tecnicoSelect" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;">
+                    <option value="">Cargando técnicos...</option>
+                </select>
+                
+                <textarea id="problema" placeholder="Problema Reportado por el Cliente" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;"></textarea>
+                <textarea id="notas" placeholder="Notas Especiales (Ej. No borrar fotos, requiere cargador)" style="padding:8px; margin:5px; border-radius:5px; width: 100%;"></textarea>
+                
+                <button type="submit" style="padding:9px; background:#3b82f6; color:white; border:none; cursor:pointer; border-radius:5px;">Generar Orden</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // Llenar select de Equipos
+            fetch('http://localhost:8080/api/equipos')
+                .then(res => res.json())
+                .then(equipos => {
+                    const select = document.getElementById('equipoSelect');
+                    select.innerHTML = '<option value="">Seleccione el Equipo...</option>';
+                    equipos.forEach(eq => {
+                        select.innerHTML += `<option value="${eq.idEquipo}">${eq.marcaModelo} - SN: ${eq.numeroSerie} (${eq.idCliente.nombreCliente})</option>`;
+                    });
+                });
+
+            // Llenar select de Técnicos 
+            fetch('http://localhost:8080/api/usuarios')
+                .then(res => res.json())
+                .then(usuarios => {
+                    const select = document.getElementById('tecnicoSelect');
+                    select.innerHTML = '<option value="">Asignar Técnico...</option>';
+                    usuarios.forEach(user => {
+                        select.innerHTML += `<option value="${user.idUsuario}">${user.nombreCompleto} (${user.rol})</option>`;
+                    });
+                });
+        };
+
+        // Enviar el formulario
+        document.getElementById('formOrden').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const nuevaOrden = {
+                idEquipo: { idEquipo: document.getElementById('equipoSelect').value },
+                idUsuarioTecnico: { idUsuario: document.getElementById('tecnicoSelect').value },
+                problemaReportado: document.getElementById('problema').value,
+                notasEspeciales: document.getElementById('notas').value
+            };
+
+            fetch('http://localhost:8080/api/ordenes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevaOrden)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert('¡Orden de trabajo generada con éxito!');
+                document.getElementById('formOrden').reset();
+            
+                window.location.href = 'index.html';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
