@@ -63,5 +63,30 @@
 
     <script src="JS/index.js"></script>
 
+    //parte modificada de parte de mauri
+    <!-- Plantilla de Impresión del Ticket (Oculta en pantalla normal) -->
+    <div id="seccion-ticket">
+        <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px;">
+            <h2 style="margin: 0;">⚡ TechFix ERP</h2>
+            <p style="margin: 5px 0 0 0; font-size: 14px;">Comprobante de Recepcion de Equipo</p>
+        </div>
+        <div style="font-size: 14px; line-height: 1.6;">
+            <p><strong>N° Orden:</strong> <span id="ticket-id"></span></p>
+            <p><strong>Fecha de Ingreso:</strong> <span id="ticket-fecha"></span></p>
+            <p><strong>Cliente:</strong> <span id="ticket-cliente"></span></p>
+            <p><strong>Equipo:</strong> <span id="ticket-equipo"></span></p>
+            <p><strong>Tecnico Asignado:</strong> <span id="ticket-tecnico"></span></p>
+            <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+            <p><strong>Problema Reportado:</strong></p>
+            <div id="ticket-problema" style="background: #f3f4f6; padding: 8px; border-radius: 4px; border: 1px solid #e5e7eb;"></div>
+            <p style="margin-top: 10px;"><strong>Notas Especiales:</strong></p>
+            <div id="ticket-notas" style="background: #f3f4f6; padding: 8px; border-radius: 4px; border: 1px solid #e5e7eb;"></div>
+        </div>
+        <div style="text-align: center; border-top: 2px dashed #000; margin-top: 20px; padding-top: 10px; font-size: 12px;">
+            <p>Conserve este ticket para la entrega de su equipo.</p>
+            <p>¡Gracias por confiar en TechFix!</p>
+        </div>
+    </div>
+
 </body>
 </html>

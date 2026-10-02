@@ -158,3 +158,33 @@ th {
     color: var(--success);
 }
 
+
+        /* parte modificada de parte mau Ocultar la sección del ticket en la vista normal de la página */
+        #seccion-ticket {
+            display: none;
+        }
+
+        /* REGLAS EXCLUSIVAS PARA IMPRESIÓN (window.print) */
+        @media print {
+            /* Ocultar toda la interfaz del ERP */
+            body * {
+                visibility: hidden;
+            }
+            /* Hacer visible únicamente la plantilla del ticket */
+            #seccion-ticket, #seccion-ticket * {
+                visibility: visible;
+                display: block !important;
+            }
+            /* Posicionar el ticket en toda la hoja */
+            #seccion-ticket {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                color: #000 !important;
+                background: #fff !important;
+                font-family: Arial, sans-serif;
+                padding: 20px;
+            }
+        }
+  
