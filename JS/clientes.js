@@ -1,12 +1,17 @@
 document.getElementById('formCliente').addEventListener('submit', function(e) {
     e.preventDefault(); // Evita que la página se recargue
 
+   // Obtenemos el usuario que inició sesión desde el localStorage
+    const usuarioActivo = JSON.parse(localStorage.getItem('usuarioActivo'));
+
     // Captura los datos del formulario
     const nuevoCliente = {
         nombreCliente: document.getElementById('nombre').value,
         telefono: document.getElementById('telefono').value,
         email: document.getElementById('email').value,
         direccion: document.getElementById('direccion').value,
+        // Agregamos el usuario que está realizando la acción para la auditoría
+        usuarioCreacion: { idUsuario: usuarioActivo.idUsuario }
     };
 
     // Envía los datos al backend de Spring Boot
