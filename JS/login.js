@@ -16,7 +16,7 @@ document.getElementById('formLogin').addEventListener('submit', function(e) {
         return response.json();
     })
     .then(usuario => {
-        // GUARDA EL USUARIO EN LA MEMORIA DEL NAVEGADOR
+        // usuario en mem
         localStorage.setItem('usuarioActivo', JSON.stringify(usuario));
         window.location.href = 'index.html'; // Redirigir al dashboard
     })
