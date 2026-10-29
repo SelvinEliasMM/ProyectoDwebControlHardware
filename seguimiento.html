@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Ticket - TechFix ERP</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .tracking-box {
+            background: #1e293b;
+            padding: 35px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .search-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .search-row input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            font-size: 16px;
+        }
+
+        .search-row button {
+            padding: 12px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .result-card {
+            margin-top: 25px;
+            padding: 20px;
+            background: #0f172a;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            display: none;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #334155;
+            font-size: 13px;
+        }
+
+        .step {
+            text-align: center;
+            color: #64748b;
+            flex: 1;
+        }
+
+        .step.active {
+            color: #10b981;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tracking-box">
+        <div style="text-align: center;">
+            <img src="imgs/logo.jpg" alt="TechFix ERP"
+                style="max-width: 160px; border-radius: 8px; margin-bottom: 10px;">
+            <h2 style="margin: 5px 0;">Portal de Seguimiento de Equipos</h2>
+            <p style="color: #94a3b8; font-size: 14px;">Ingresa el número de tu orden (ej. <b>#ORD-1</b> o <b>1</b>)
+                para consultar el estado en tiempo real.</p>
+        </div>
+
+        <div class="search-row">
+            <input type="text" id="inputTicket" placeholder="Ej: #ORD-8 o 8">
+            <button onclick="consultarTicket()">Consultar</button>
+        </div>
+
+        <p id="mensajeError" style="color: #ef4444; display: none; margin-top: 15px; text-align: center;"></p>
+
+        <div class="result-card" id="resultadoOrden">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="resTicket" style="margin: 0; color: #38bdf8;"></h3>
+                <span id="resEstado" class="badge"></span>
+            </div>
+            <p style="margin: 12px 0 5px;"><strong>Cliente:</strong> <span id="resCliente"></span></p>
+            <p style="margin: 5px 0;"><strong>Equipo:</strong> <span id="resEquipo"></span> (S/N: <span
+                    id="resSerie"></span>)</p>
+            <p style="margin: 5px 0;"><strong>Falla reportada:</strong> <span id="resProblema"></span></p>
+            <p style="margin: 5px 0;"><strong>Técnico asignado:</strong> <span id="resTecnico"></span></p>
+
+            <div class="steps" id="barraProgreso">
+                <div class="step" data-step="Recibido">1. Recibido</div>
+                <div class="step" data-step="En Diagnóstico">2. Diagnóstico</div>
+                <div class="step" data-step="En Reparación">3. En Reparación</div>
+                <div class="step" data-step="Reparado">4. Listo</div>
+                <div class="step" data-step="Entregado">5. Entregado</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="login.html" style="color: #94a3b8; text-decoration: none; font-size: 14px;">← Volver al inicio de
+                sesión del personal</a>
+        </div>
+    </div>
+
+    <script>
+        function consultarTicket() {
+            const rawInput = document.getElementById('inputTicket').value.trim().toUpperCase();
+            const idLimpio = rawInput.replace('#ORD-', '').replace('ORD-', '').replace('#', '').trim();
+            const msgError = document.getElementById('mensajeError');
+            const card = document.getElementById('resultadoOrden');
+
+            if (!idLimpio || isNaN(idLimpio)) {
+                msgError.innerText = 'Por favor ingresa un número de ticket válido.';
+                msgError.style.display = 'block';
+                card.style.display = 'none';
+                return;
+            }
+
+            fetch(`http://localhost:8080/api/ordenes/consulta-publica/${idLimpio}`)
+                .then(async res => {
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.mensaje || 'Orden no encontrada');
+                    return data;
+                })
+                .then(orden => {
+                    msgError.style.display = 'none';
+                    document.getElementById('resTicket').innerText = orden.ticket;
+                    document.getElementById('resCliente').innerText = orden.cliente;
+                    document.getElementById('resEquipo').innerText = orden.equipo;
+                    document.getElementById('resSerie').innerText = orden.numeroSerie || 'N/A';
+                    document.getElementById('resProblema').innerText = orden.problemaReportado;
+                    document.getElementById('resTecnico').innerText = orden.tecnicoAsignado;
+
+                    const badge = document.getElementById('resEstado');
+                    badge.innerText = orden.estadoReparacion;
+                    badge.className = (orden.estadoReparacion === 'Reparado' || orden.estadoReparacion === 'Entregado') ? 'badge ready' : 'badge diag';
+
+                    const ordenEstados = ['Recibido', 'En Diagnóstico', 'En Reparación', 'Reparado', 'Entregado'];
+                    const idxActual = ordenEstados.indexOf(orden.estadoReparacion);
+                    document.querySelectorAll('#barraProgreso .step').forEach((el, index) => {
+                        el.classList.toggle('active', index <= idxActual);
+                    });
+
+                    card.style.display = 'block';
+                })
+                .catch(err => {
+                    card.style.display = 'none';
+                    msgError.innerText = err.message;
+                    msgError.style.display = 'block';
+                });
+        }
+    </script>
+</body>
+
+</html>
