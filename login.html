@@ -2,19 +2,46 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>TechFix ERP Iniciar Sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Iniciar Sesión</title>
     <link rel="stylesheet" href="CSS/estilos.css">
-    <link rel="stylesheet" href = "CSS/estiloLogin.css">
+    <link rel="stylesheet" href="CSS/estiloLogin.css">
 </head>
 <body>
-    <div class="login-box">
-        <h1>TechFix ERP</h1>
-        <p style="color: #9ca3af; margin-bottom: 20px;">Ingresa tus credenciales</p>
-        <form id="formLogin">
-            <input type="email" id="correo" placeholder="Correo electrónico" required>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <button type="submit">Entrar al Sistema</button>
-        </form>
+    <div class="login-wrapper">
+        <div class="login-box">
+            <div class="login-logo-header">
+                <img src="imgs/logo.jpg" alt="Logo TechFix" class="login-logo-img">
+                <h1 class="login-title">TechFix ERP</h1>
+            </div>
+            <h2>Acceso al Sistema</h2>
+            <p class="subtitle">Control de Diagnóstico y Reparación de Hardware</p>
+            
+            <form id="formLogin">
+                <div class="form-group text-left">
+                    <label for="correo">Correo Electrónico:</label>
+                    <input type="email" id="correo" placeholder="ejemplocorreo@gmail.com" required autofocus>
+                </div>
+
+                <div class="form-group text-left">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Entrar al Sistema
+                </button>
+            </form>
+                <!--- 
+            <div class="credentials-tip">
+                <p class="credentials-title">Credenciales del Sistema:</p>
+           <div class="credentials-list">
+                    <div>Administrador: <code>admin@erphardware.com</code> <code>123456</code></div>
+                    <div>Técnico: <code>tecnico@erphardware.com</code> <code>123456</code></div>
+                </div>
+            </div>
+            -->
+        </div>
     </div>
 
     <script src="JS/login.js"></script>

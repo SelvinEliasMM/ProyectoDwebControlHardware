@@ -1,203 +1,170 @@
-// Función para cargar los datos del usuario desde la base de datos
-function cargarUsuario() {
-    const usuarioStr = localStorage.getItem('usuarioActivo');
-    if (!usuarioStr) {
-        window.location.href = 'login.html';
-        return;
-    }
+// conrtrol de lógica del Dashboard principal
+let ordenesCache = [];
+let ordenSeleccionada = null;
 
-    const usuario = JSON.parse(usuarioStr);
-    document.querySelector('.user-info').innerHTML =
-        `${usuario.nombreCompleto} (${usuario.rol}) 
-    <button onclick="cerrarSesion()" style="margin-left:15px; padding:5px 10px; background:#ef4444; color:white; border:none; border-radius:5px; cursor:pointer;">Salir</button>`;
+// Inicializacion componentes y datos del panel de control
+async function inicializarDashboard() {
+    const usuario = verificarSesion();
+    if (!usuario) return;
 
-    if (usuario.rol === 'Técnico') {
-        document.getElementById('menu-ordenes').style.display = 'none';
-        document.getElementById('menu-clientes').style.display = 'none';
-        document.getElementById('menu-facturas').style.display = 'none';
-    }
+    renderSidebar('dashboard');
+    renderHeaderUsuario();
+
+    await Promise.all([
+        cargarOrdenesDashboard(usuario),
+        cargarAlertasStock()
+    ]);
 }
 
-function cerrarSesion() {
-    localStorage.removeItem('usuarioActivo');
-    window.location.href = 'login.html';
-}
+// Cargar listado de órdenes y actualiza indicadores de resumen
+async function cargarOrdenesDashboard(usuario) {
+    try {
+        const data = await apiFetch('/ordenes');
+        ordenesCache = data || [];
 
-// Función para cargar las órdenes desde la base de datos
-function cargarOrdenes() {
-    const usuarioStr = localStorage.getItem('usuarioActivo');
-    const usuarioActual = JSON.parse(usuarioStr);
+        // filtro por rol del usuario autenticado
+        let ordenesAMostrar = ordenesCache;
+        if (usuario.rol === 'Técnico') {
+            ordenesAMostrar = ordenesCache.filter(o => o.idUsuarioTecnico && o.idUsuarioTecnico.idUsuario === usuario.idUsuario);
+        }
 
-    fetch('http://localhost:8080/api/ordenes')
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('tabla-ordenes');
-            tbody.innerHTML = '';
+        const totalActivas = ordenesAMostrar.filter(o => o.estadoReparacion !== 'Entregado').length;
+        const totalDiag = ordenesAMostrar.filter(o => o.estadoReparacion === 'En Diagnóstico').length;
+        const totalListos = ordenesAMostrar.filter(o => o.estadoReparacion === 'Reparado').length;
 
-            let ordenesAMostrar = data;
-            if (usuarioActual.rol === 'Técnico') {
-                ordenesAMostrar = data.filter(orden => orden.idUsuarioTecnico.idUsuario === usuarioActual.idUsuario);
+        document.getElementById('count-activas').innerText = totalActivas;
+        document.getElementById('count-diagnostico').innerText = totalDiag;
+        document.getElementById('count-listos').innerText = totalListos;
+
+        const tbody = document.getElementById('tabla-ordenes');
+        if (ordenesAMostrar.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state-card">No hay órdenes registradas para mostrar.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        ordenesAMostrar.forEach(orden => {
+            const idOrden = orden.idOrden;
+            const cliente = orden.idEquipo && orden.idEquipo.idCliente ? orden.idEquipo.idCliente.nombreCliente : 'Cliente no asignado';
+            const equipo = orden.idEquipo ? `${orden.idEquipo.marcaModelo} <span class="field-help-text">(Serie: ${orden.idEquipo.numeroSerie})</span>` : 'N/A';
+            const tecnico = orden.idUsuarioTecnico ? orden.idUsuarioTecnico.nombreCompleto : 'Sin asignar';
+            
+            // Distintivo visual del estado de reparación
+            let badgeClass = 'badge recibido';
+            if (orden.estadoReparacion === 'En Diagnóstico') badgeClass = 'badge diag';
+            else if (orden.estadoReparacion === 'Reparado') badgeClass = 'badge ready';
+            else if (orden.estadoReparacion === 'Entregado') badgeClass = 'badge entregado';
+
+            // Distintivo de solicitud de respaldo
+            const requiereRespaldoBadge = orden.requiereRespaldo
+                ? `<span class="badge respaldo-si" title="Solicitud de respaldo de archivos">SÍ (Respaldar)</span>`
+                : `<span class="badge respaldo-no">NO</span>`;
+
+            // Botones de acción contextual
+            let btnTicket = `<button class="btn btn-secondary btn-sm" onclick="verTicket(${idOrden})" title="Ver comprobante">Ticket</button>`;
+            let btnTaller = `<a href="diagnostico.html?idOrden=${idOrden}" class="btn btn-primary btn-sm" title="Ir a taller">Taller</a>`;
+            let btnFacturar = '';
+            
+            if (usuario.rol === 'Administrador' && orden.estadoReparacion === 'Reparado') {
+                btnFacturar = `<a href="facturas.html?idOrden=${idOrden}" class="btn btn-success btn-sm" title="Emitir factura">Facturar</a>`;
             }
 
-            let totalActivas = ordenesAMostrar.length;
-            let totalDiagnostico = ordenesAMostrar.filter(orden => orden.estadoReparacion === 'En Diagnóstico').length;
-            let totalReparados = ordenesAMostrar.filter(orden => orden.estadoReparacion === 'Reparado').length;
-
-            document.getElementById('count-activas').innerText = totalActivas;
-            document.getElementById('count-diagnostico').innerText = totalDiagnostico;
-            document.getElementById('count-listos').innerText = totalReparados;
-
-            ordenesAMostrar.forEach(orden => {
-                let badgeClass = orden.estadoReparacion === 'Reparado' ? 'badge ready' : 'badge diag';
-
-                let botonAccion = '';
-                if (orden.estadoReparacion !== 'Reparado' && usuarioActual.rol === 'Técnico') {
-                    botonAccion = `<button onclick="marcarReparado(${orden.idOrden})" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Marcar Reparado</button>`;
-                }
-
-                let fila = `
-                <tr>
-                    <td>#ORD-${orden.idOrden}</td>
-                    <td>${orden.idEquipo.idCliente.nombreCliente}</td>
-                    <td>${orden.idEquipo.marcaModelo}</td>
-                    <td><span class="${badgeClass}">${orden.estadoReparacion}</span></td>
-                    <td>${orden.idUsuarioTecnico.nombreCompleto}</td>
-                    <td>${botonAccion}</td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>#ORD-${idOrden}</strong></td>
+                <td>${cliente}</td>
+                <td>${equipo}</td>
+                <td>${requiereRespaldoBadge}</td>
+                <td><span class="${badgeClass}">${orden.estadoReparacion}</span></td>
+                <td>${tecnico}</td>
+                <td>
+                    <div class="cell-actions">
+                        ${btnTicket}
+                        ${btnTaller}
+                        ${btnFacturar}
+                    </div>
+                </td>
             `;
-                tbody.innerHTML += fila;
-            });
-        })
-        .catch(error => console.error('Error al cargar órdenes:', error));
-}
+            tbody.appendChild(tr);
+        });
 
-// Función para que el técnico actualice el estado
-function marcarReparado(idOrden) {
-    if (confirm('¿Confirmas que este equipo está reparado?')) {
-        fetch(`http://localhost:8080/api/ordenes/${idOrden}/estado`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ estado: 'Reparado' })
-        })
-            .then(res => res.json())
-            .then(() => {
-                cargarOrdenes(); 
-            });
+    } catch (err) {
+        console.error('Error al cargar órdenes:', err);
+        mostrarNotificacion('No se pudieron obtener las órdenes del servidor.', 'error');
     }
 }
 
-window.onload = function() {
-    cargarUsuario();
-    cargarOrdenes();
-};
- //parte modificada de parte de mauri
-        let ordenesGlobales = []; // Guardará las órdenes cargadas para la impresión
-
-        function cargarUsuario() {
-            const usuarioStr = localStorage.getItem('usuarioActivo');
-            if (!usuarioStr) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const usuario = JSON.parse(usuarioStr);
-            document.querySelector('.user-info').innerHTML =
-                `${usuario.nombreCompleto} (${usuario.rol}) 
-            <button onclick="cerrarSesion()" style="margin-left:15px; padding:5px 10px; background:#ef4444; color:white; border:none; border-radius:5px; cursor:pointer;">Salir</button>`;
-
-            // Lógica de Roles estricta
-            if (usuario.rol === 'Técnico') {
-                if(document.getElementById('menu-ordenes')) document.getElementById('menu-ordenes').style.display = 'none';
-                if(document.getElementById('menu-clientes')) document.getElementById('menu-clientes').style.display = 'none';
-                if(document.getElementById('menu-facturas')) document.getElementById('menu-facturas').style.display = 'none';
-            }
+// consult repuestos con nivel de existencia crítico
+async function cargarAlertasStock() {
+    try {
+        const stockBajo = await apiFetch('/repuestos/stock-bajo');
+        const countBadge = document.getElementById('count-stock-bajo');
+        if (countBadge) {
+            countBadge.innerText = (stockBajo || []).length;
         }
+    } catch (err) {
+        console.error('Error al consultar stock bajo:', err);
+    }
+}
 
-        function cerrarSesion() {
-            localStorage.removeItem('usuarioActivo');
-            window.location.href = 'login.html';
-        }
+// modal con detalles del comprobante para visualización e impresión
+function verTicket(idOrden) {
+    const orden = ordenesCache.find(o => o.idOrden === idOrden);
+    if (!orden) return;
+    ordenSeleccionada = orden;
 
-        function cargarOrdenes() {
-            const usuarioStr = localStorage.getItem('usuarioActivo');
-            const usuarioActual = JSON.parse(usuarioStr);
+    const modalBody = document.getElementById('modal-ticket-body');
+    const cliente = orden.idEquipo && orden.idEquipo.idCliente ? orden.idEquipo.idCliente : {};
+    const equipo = orden.idEquipo || {};
+    const tecnico = orden.idUsuarioTecnico ? orden.idUsuarioTecnico.nombreCompleto : 'No asignado';
 
-            fetch('http://localhost:8080/api/ordenes')
-                .then(response => response.json())
-                .then(data => {
-                    ordenesGlobales = data; // Guardamos las órdenes en memoria
-                    const tbody = document.getElementById('tabla-ordenes');
-                    tbody.innerHTML = '';
+    modalBody.innerHTML = `
+        <div class="summary-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:1.1rem; font-weight:bold; color:#60a5fa;">Ticket #ORD-${orden.idOrden}</span>
+                <span class="badge ${orden.estadoReparacion === 'Reparado' ? 'ready' : 'diag'}">${orden.estadoReparacion}</span>
+            </div>
+            <p><strong>Fecha de Ingreso:</strong> ${formatearFecha(orden.fechaIngreso)}</p>
+            <p><strong>Cliente:</strong> ${cliente.nombreCliente || 'N/A'} (Tel: ${cliente.telefono || 'N/A'})</p>
+            <p><strong>Equipo:</strong> ${equipo.marcaModelo || 'N/A'} - <strong>Serie:</strong> ${equipo.numeroSerie || 'N/A'}</p>
+            <p><strong>Técnico Asignado:</strong> ${tecnico}</p>
+            <p style="margin-top:8px;"><strong>Respaldo de Información:</strong> 
+                ${orden.requiereRespaldo ? '<span style="color:#ef4444; font-weight:bold;">SÍ - Realizar copia de seguridad</span>' : 'NO'}
+            </p>
+        </div>
+        <div style="margin-bottom:10px;">
+            <strong>Problema Reportado:</strong>
+            <p class="summary-box" style="margin-top:4px;">${orden.problemaReportado || 'N/A'}</p>
+        </div>
+        <div>
+            <strong>Notas Especiales:</strong>
+            <p class="summary-box" style="margin-top:4px;">${orden.notasEspeciales || 'Ninguna especificación adicional'}</p>
+        </div>
+    `;
 
-                    let ordenesAMostrar = data;
-                    if (usuarioActual.rol === 'Técnico') {
-                        ordenesAMostrar = data.filter(orden => orden.idUsuarioTecnico.idUsuario === usuarioActual.idUsuario);
-                    }
+    // dTOS Carga plantilla de impresión física
+    document.getElementById('ticket-id').innerText = `#ORD-${orden.idOrden}`;
+    document.getElementById('ticket-fecha').innerText = formatearFecha(orden.fechaIngreso);
+    document.getElementById('ticket-cliente').innerText = cliente.nombreCliente || 'N/A';
+    document.getElementById('ticket-telefono').innerText = cliente.telefono || 'N/A';
+    document.getElementById('ticket-equipo').innerText = equipo.marcaModelo || 'N/A';
+    document.getElementById('ticket-serie').innerText = equipo.numeroSerie || 'N/A';
+    document.getElementById('ticket-tecnico').innerText = tecnico;
+    document.getElementById('ticket-respaldo').innerText = orden.requiereRespaldo ? 'SÍ (REQUERIDO POR CLIENTE)' : 'NO';
+    document.getElementById('ticket-problema').innerText = orden.problemaReportado || 'N/A';
+    document.getElementById('ticket-notas').innerText = orden.notasEspeciales || 'Sin notas especiales';
 
-                    // Actualizar Tarjetas
-                    document.getElementById('count-activas').innerText = ordenesAMostrar.length;
-                    document.getElementById('count-diagnostico').innerText = ordenesAMostrar.filter(o => o.estadoReparacion === 'En Diagnóstico').length;
-                    document.getElementById('count-listos').innerText = ordenesAMostrar.filter(o => o.estadoReparacion === 'Reparado').length;
+    document.getElementById('modal-ticket').classList.add('active');
+}
 
-                    ordenesAMostrar.forEach(orden => {
-                        let badgeClass = orden.estadoReparacion === 'Reparado' ? 'badge ready' : 'badge diag';
+// cierra modal de visualización de ticket
+function cerrarModalTicket() {
+    document.getElementById('modal-ticket').classList.remove('active');
+}
 
-                        // Botón de imprimir Ticket
-                        let botonTicket = `<button onclick="imprimirTicket(${orden.idOrden})" style="background:#3b82f6; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; margin-right:5px;">🎫 Ticket</button>`;
+// dialog de impresión del navegador
+function imprimirTicketActual() {
+    window.print();
+}
 
-                        // Botón para Marcar Reparado (Solo para técnicos y si está en diagnóstico)
-                        let botonAccion = '';
-                        if (orden.estadoReparacion !== 'Reparado' && usuarioActual.rol === 'Técnico') {
-                            botonAccion = `<button onclick="marcarReparado(${orden.idOrden})" style="background:#10b981; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Marcar Reparado</button>`;
-                        }
-
-                        let fila = `
-                            <tr>
-                                <td>#ORD-${orden.idOrden}</td>
-                                <td>${orden.idEquipo.idCliente.nombreCliente}</td>
-                                <td>${orden.idEquipo.marcaModelo}</td>
-                                <td><span class="${badgeClass}">${orden.estadoReparacion}</span></td>
-                                <td>${orden.idUsuarioTecnico.nombreCompleto}</td>
-                                <td>${botonTicket} ${botonAccion}</td>
-                            </tr>
-                        `;
-                        tbody.innerHTML += fila;
-                    });
-                })
-                .catch(error => console.error('Error al cargar órdenes:', error));
-        }
-
-        // Función para llenar los datos e invocar la ventana de impresión
-        function imprimirTicket(idOrden) {
-            const orden = ordenesGlobales.find(o => o.idOrden === idOrden);
-            if (!orden) return;
-
-            document.getElementById('ticket-id').innerText = `#ORD-${orden.idOrden}`;
-            document.getElementById('ticket-fecha').innerText = orden.fechaIngreso ? new Date(orden.fechaIngreso).toLocaleString() : 'Reciente';
-            document.getElementById('ticket-cliente').innerText = orden.idEquipo.idCliente.nombreCliente;
-            document.getElementById('ticket-equipo').innerText = `${orden.idEquipo.marcaModelo} (SN: ${orden.idEquipo.numeroSerie})`;
-            document.getElementById('ticket-tecnico').innerText = orden.idUsuarioTecnico.nombreCompleto;
-            document.getElementById('ticket-problema').innerText = orden.problemaReportado || 'N/A';
-            document.getElementById('ticket-notas').innerText = orden.notasEspeciales || 'Sin observaciones adicionales';
-
-            // Abre el cuadro de diálogo de impresión del navegador
-            window.print();
-        }
-
-        function marcarReparado(idOrden) {
-            if (confirm('¿Confirmas que este equipo está reparado?')) {
-                fetch(`http://localhost:8080/api/ordenes/${idOrden}/estado`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ estado: 'Reparado' })
-                })
-                .then(res => res.json())
-                .then(() => cargarOrdenes());
-            }
-        }
-
-        window.onload = function() {
-            cargarUsuario();
-            cargarOrdenes();
-        };
-    
+window.onload = inicializarDashboard;

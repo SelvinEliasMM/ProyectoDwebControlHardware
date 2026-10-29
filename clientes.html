@@ -2,31 +2,85 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>ERP Hardware | Clientes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Gestión de Clientes</title>
     <link rel="stylesheet" href="CSS/estilos.css">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">TechFix ERP</div>
-        <div class="menu-item"><a href="index.html" style="color:inherit; text-decoration:none;">Dashboard</a></div>
-        <div class="menu-item"><a href="equipos.html" style="color:inherit; text-decoration:none;">Registro de Equipos</a></div>
-        <div class="menu-item active">Clientes</div>
-    </div>
-    
-    <div class="main-content">
-        <h2>Registrar Nuevo Cliente</h2>
 
-        <div class="card">
-            <form id="formCliente">
-                <input type="text" id="nombre" placeholder="Nombre completo" required style="padding:8px; margin:5px; border-radius:5px;">
-                <input type="text" id="telefono" placeholder="Teléfono" required style="padding:8px; margin:5px; border-radius:5px;">
-                <input type="email" id="email" placeholder="Correo electrónico" style="padding:8px; margin:5px; border-radius:5px;">
-                <input type="text" id="direccion" placeholder="Dirección" style="padding:8px; margin:5px; border-radius:5px;">
-                <button type="submit" style="padding:9px; background:#3b82f6; color:white; border:none; cursor:pointer; border-radius:5px;">Guardar Cliente</button>
-            </form>
+    <!-- Menú lateral común -->
+    <div class="sidebar"></div>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Gestión de Clientes</h1>
+                <p class="header-subtitle">Catálogo de clientes y propietarios de hardware</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <div class="two-column-layout">
+            <!--  registro -->
+            <div class="card">
+                <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Registrar Nuevo Cliente</h2>
+                <form id="formCliente">
+                    <div class="form-group">
+                        <label for="nombre">Nombre Completo *</label>
+                        <input type="text" id="nombre" placeholder="Ej. Juan Pérez" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefono">Teléfono de Contacto *</label>
+                        <input type="text" id="telefono" placeholder="Ej. 5555-1234" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico (Único) *</label>
+                        <input type="email" id="email" placeholder="cliente@correo.com" required>
+                        <small class="field-help-text">No se permiten correos duplicados en el sistema.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Dirección Física</label>
+                        <input type="text" id="direccion" placeholder="Ej. Zona 1, Ciudad">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btnGuardarCliente" style="margin-top: 10px;">
+                        Guardar Cliente
+                    </button>
+                </form>
+            </div>
+
+            <!-- Listado de clientes que estan registrados -->
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Directorio de Clientes</h2>
+                    <input type="text" id="buscarCliente" placeholder="Filtrar por nombre, teléfono o correo..." class="search-input-field">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Teléfono</th>
+                            <th>Correo Electrónico</th>
+                            <th>Dirección</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-clientes">
+                        <tr>
+                            <td colspan="5" class="empty-state-card">Cargando directorio de clientes...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <script src="JS/api.js"></script>
     <script src="JS/clientes.js"></script>
 </body>
 </html>

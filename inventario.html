@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Control de Inventario y Kardex</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+</head>
+<body>
+
+    <!-- Menú  común -->
+    <div class="sidebar"></div>
+
+    <!-- principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Control de Inventario y Kardex</h1>
+                <p class="header-subtitle">Gestión de existencias de repuestos, catálogo de precios y trazabilidad de movimientos</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <!-- navegación interna -->
+        <div class="tab-container">
+            <button class="tab-btn active" id="tab-catalogo-btn" onclick="cambiarTab('catalogo')">
+                <img src="imgs/box.svg" alt="" class="btn-icon-img"> Catálogo de Repuestos
+            </button>
+            <button class="tab-btn" id="tab-kardex-btn" onclick="cambiarTab('kardex')">
+                <img src="imgs/activity.svg" alt="" class="btn-icon-img"> Kardex de Movimientos
+            </button>
+        </div>
+
+        <!-- Catálogo de repuestos -->
+        <div id="seccion-catalogo">
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <div>
+                        <h2>Catálogo de Repuestos y Componentes</h2>
+                        <span id="resumen-stock-bajo" style="font-size: 0.85rem; font-weight: 600;"></span>
+                    </div>
+                    <div class="cell-actions" style="align-items: center;">
+                        <input type="text" id="buscarRepuesto" placeholder="Buscar por código o nombre..." class="search-input-field">
+                        <button class="btn btn-primary btn-sm" id="btnNuevoRepuestoModal" onclick="abrirModalNuevoRepuesto()">
+                            Nuevo Repuesto
+                        </button>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre del Repuesto</th>
+                            <th>Descripción</th>
+                            <th>Precio Unitario</th>
+                            <th>Stock Disponible</th>
+                            <th>Mínimo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-repuestos">
+                        <tr>
+                            <td colspan="8" class="empty-state-card">Cargando repuestos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--  Kardex de movimientos -->
+        <div id="seccion-kardex" style="display: none;">
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Kardex de Auditoría de Inventario</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="cargarKardex()">Actualizar Kardex</button>
+                </div>
+                <p class="header-subtitle" style="margin-bottom: 16px;">
+                    Registro inmutable de todas las ENTRADAS, SALIDAS (consumos en taller) y AJUSTES de inventario.
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Repuesto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Motivo / Orden</th>
+                            <th>Usuario Responsable</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-kardex">
+                        <tr>
+                            <td colspan="6" class="empty-state-card">Cargando movimientos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal para nuevo repuesto -->
+    <div id="modal-nuevo-repuesto" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Registrar Nuevo Repuesto / Componente</h3>
+                <button class="modal-close" onclick="cerrarModalNuevoRepuesto()">&times;</button>
+            </div>
+            <form id="formNuevoRepuesto">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="codigoRepuesto">Código de Repuesto *</label>
+                        <input type="text" id="codigoRepuesto" placeholder="Ej. SSD-1TB-NVME" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nombreRepuesto">Nombre *</label>
+                        <input type="text" id="nombreRepuesto" placeholder="Ej. SSD Kingston 1TB NVMe" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcionRepuesto">Descripción Técnica</label>
+                    <textarea id="descripcionRepuesto" rows="2" placeholder="Especificaciones, compatibilidad..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="precioRepuesto">Precio Unitario (Q) *</label>
+                        <input type="number" id="precioRepuesto" step="0.01" min="0" placeholder="Ej. 450.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockRepuesto">Stock Inicial *</label>
+                        <input type="number" id="stockRepuesto" min="0" placeholder="Ej. 10" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="stockMinimoRepuesto">Stock Mínimo de Alerta *</label>
+                        <input type="number" id="stockMinimoRepuesto" min="1" placeholder="Ej. 3" value="3" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModalNuevoRepuesto()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarRepuesto">Guardar en Catálogo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- modal de Kardex individual -->
+    <div id="modal-kardex-repuesto" class="modal-overlay">
+        <div class="modal-content" style="max-width: 750px;">
+            <div class="modal-header">
+                <h3 id="modal-kardex-titulo">Historial Kardex de Repuesto</h3>
+                <button class="modal-close" onclick="cerrarModalKardexRepuesto()">&times;</button>
+            </div>
+            <div id="modal-kardex-contenido" style="max-height: 400px; overflow-y: auto;">
+                <!-- din -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="cerrarModalKardexRepuesto()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="JS/api.js"></script>
+    <script src="JS/inventario.js"></script>
+</body>
+</html>

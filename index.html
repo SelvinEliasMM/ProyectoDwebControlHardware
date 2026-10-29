@@ -3,30 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ERP Hardware</title>
+    <title>TechFix ERP - Panel de Control</title>
     <link rel="stylesheet" href="CSS/estilos.css">
-    
-   
 </head>
 <body>
 
-   
-    <div class="sidebar">
-        <div class="logo"> TechFix ERP</div>
-        <div class="menu-item active"> Dashboard</div>
-        <div class="menu-item" id="menu-ordenes"> <a href="ordenes.html" style="color:inherit; text-decoration:none;">Órdenes de Trabajo</a></div>
-        <div class="menu-item" id="menu-clientes"><a href="clientes.html" style="color:inherit; text-decoration:none;"> Clientes y Equipos </a></div>
-        <div class="menu-item"> Inventario</div>
-        <div class="menu-item" id="menu-facturas" > Facturación</div>
-    </div>
+    <!-- Menu com-->
+    <div class="sidebar"></div>
 
-  
+    <!-- Cont principal-->
     <div class="main-content">
         <div class="header">
-            <h1>Panel de Control</h1>
+            <div class="header-title-box">
+                <h1>Panel de Control</h1>
+                <p class="header-subtitle">Monitoreo general de órdenes y taller de hardware</p>
+            </div>
             <div class="user-info"></div>
         </div>
 
+        <!--tarj de resumen de estado -->
         <div class="dashboard-cards">
             <div class="card">
                 <h3>Órdenes Activas</h3>
@@ -37,57 +32,121 @@
                 <div class="number" id="count-diagnostico">0</div>
             </div>
             <div class="card success">
-                <h3>Listos para Entrega</h3>
+                <h3>Reparados / Listos</h3>
                 <div class="number" id="count-listos">0</div>
-            </div> 
-         </div>
+            </div>
+            <div class="card danger">
+                <h3>Stock Bajo Repuestos</h3>
+                <div class="number" id="count-stock-bajo">0</div>
+            </div>
+        </div>
 
+        <!-- tab de órdenes recientes -->
         <div class="table-container">
-            <h2>Últimos Equipos Ingresados</h2>
+            <div class="table-header-flex">
+                <h2>Equipos en Taller y Órdenes Recientes</h2>
+                <div class="cell-actions">
+                    <a href="ordenes.html" class="btn btn-primary btn-sm">Nueva Orden</a>
+                    <a href="diagnostico.html" class="btn btn-secondary btn-sm">Taller y Reparación</a>
+                </div>
+            </div>
+            
             <table>
                 <thead>
                     <tr>
                         <th>Ticket</th>
                         <th>Cliente</th>
-                        <th>Equipo</th>
+                        <th>Equipo (Serie)</th>
+                        <th>Respaldo Datos</th>
                         <th>Estado</th>
-                        <th>Técnico</th>
+                        <th>Técnico Asignado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-ordenes">
-                   
+                    <tr>
+                        <td colspan="7" class="empty-state-card">Cargando órdenes del sistema...</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script src="JS/index.js"></script>
-
-    <!--parte modificada de parte de mauri
-    <!-- Plantilla de Impresión del Ticket (Oculta en pantalla normal) -->
-    <div id="seccion-ticket">
-        <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 15px;">
-            <h2 style="margin: 0;">TechFix ERP</h2>
-            <p style="margin: 5px 0 0 0; font-size: 14px;">Comprobante de Recepcion de Equipo</p>
-        </div>
-        <div style="font-size: 14px; line-height: 1.6;">
-            <p><strong>N° Orden:</strong> <span id="ticket-id"></span></p>
-            <p><strong>Fecha de Ingreso:</strong> <span id="ticket-fecha"></span></p>
-            <p><strong>Cliente:</strong> <span id="ticket-cliente"></span></p>
-            <p><strong>Equipo:</strong> <span id="ticket-equipo"></span></p>
-            <p><strong>Tecnico Asignado:</strong> <span id="ticket-tecnico"></span></p>
-            <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
-            <p><strong>Problema Reportado:</strong></p>
-            <div id="ticket-problema" style="background: #f3f4f6; padding: 8px; border-radius: 4px; border: 1px solid #e5e7eb;"></div>
-            <p style="margin-top: 10px;"><strong>Notas Especiales:</strong></p>
-            <div id="ticket-notas" style="background: #f3f4f6; padding: 8px; border-radius: 4px; border: 1px solid #e5e7eb;"></div>
-        </div>
-        <div style="text-align: center; border-top: 2px dashed #000; margin-top: 20px; padding-top: 10px; font-size: 12px;">
-            <p>Conserve este ticket para la entrega de su equipo.</p>
-            <p>¡Gracias por confiar en TechFix!</p>
+    <!-- Modal de previsualización de ticket -->
+    <div id="modal-ticket" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Comprobante de Recepción</h3>
+                <button class="modal-close" onclick="cerrarModalTicket()">&times;</button>
+            </div>
+            <div id="modal-ticket-body">
+                <!-- cont dinam-->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="cerrarModalTicket()">Cerrar</button>
+                <button class="btn btn-primary" onclick="imprimirTicketActual()">Imprimir Ticket</button>
+            </div>
         </div>
     </div>
+    <!-- compr -->
+    <div id="seccion-ticket">
+    
+        <h2>TechFix ERP</h2>
+        <h3>Comprobante de Recepción de Equipo</h3>
+        <hr>
+    
+        <table>
+            <tr>
+                <td><b>Ticket N°:</b></td>
+                <td id="ticket-id"></td>
+            </tr>
+            <tr>
+                <td><b>Fecha:</b></td>
+                <td id="ticket-fecha"></td>
+            </tr>
+            <tr>
+                <td><b>Cliente:</b></td>
+                <td id="ticket-cliente"></td>
+            </tr>
+            <tr>
+                <td><b>Teléfono:</b></td>
+                <td id="ticket-telefono"></td>
+            </tr>
+            <tr>
+                <td><b>Equipo:</b></td>
+                <td id="ticket-equipo"></td>
+            </tr>
+            <tr>
+                <td><b>N° de Serie:</b></td>
+                <td id="ticket-serie"></td>
+            </tr>
+            <tr>
+                <td><b>Técnico:</b></td>
+                <td id="ticket-tecnico"></td>
+            </tr>
+            <tr>
+                <td><b>Respaldo:</b></td>
+                <td id="ticket-respaldo"></td>
+            </tr>
+        </table>
+    
+        <hr>
+    
+        <p><b>Problema reportado:</b></p>
+        <p id="ticket-problema"></p>
+    
+        <p><b>Notas:</b></p>
+        <p id="ticket-notas"></p>
+    
+        <hr>
+    
+        <p><b>Importante:</b> Presente este comprobante para retirar su equipo.</p>
+        <p>Pasados 30 días del aviso de reparación, el taller no se hace responsable por equipos no reclamados.</p>
+        <p>Gracias por su preferencia.</p>
+    
+        </div>
 
+    <script src="JS/api.js"></script>
+    <script src="JS/index.js"></script>
 </body>
 </html>

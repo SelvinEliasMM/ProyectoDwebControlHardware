@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Gestión de Usuarios y Técnicos</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+</head>
+<body>
+
+    <!-- Menú lateral común -->
+    <div class="sidebar"></div>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Usuarios y Técnicos</h1>
+                <p class="header-subtitle">Administración de personal técnico y accesos al sistema</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <div class="two-column-layout">
+            <!-- registro -->
+            <div class="card">
+                <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Registrar Nuevo Usuario</h2>
+                <form id="formUsuario">
+                    <div class="form-group">
+                        <label for="nombreCompleto">Nombre Completo *</label>
+                        <input type="text" id="nombreCompleto" placeholder="Ej. Carlos Méndez" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="correoUsuario">Correo Electrónico (Único) *</label>
+                        <input type="email" id="correoUsuario" placeholder="tecnico2@erphardware.com" required>
+                        <small class="field-help-text">Se usará como credencial de inicio de sesión.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="passwordUsuario">Contraseña de Acceso *</label>
+                        <input type="password" id="passwordUsuario" placeholder="Mínimo 6 caracteres" minlength="4" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rolUsuario">Rol en el Sistema *</label>
+                        <select id="rolUsuario" required>
+                            <option value="Técnico" selected>Técnico de Hardware</option>
+                            <option value="Administrador">Administrador</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btnGuardarUsuario" style="margin-top: 10px;">
+                        Guardar Usuario
+                    </button>
+                </form>
+            </div>
+
+            <!-- listado de usuarios -->
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Personal Registrado</h2>
+                    <input type="text" id="buscarUsuario" placeholder="Filtrar por nombre, correo o rol..." class="search-input-field">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre Completo</th>
+                            <th>Correo Electrónico</th>
+                            <th>Rol Asignado</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios">
+                        <tr>
+                            <td colspan="5" class="empty-state-card">Cargando personal...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="JS/api.js"></script>
+    <script src="JS/usuarios.js"></script>
+</body>
+</html>
+

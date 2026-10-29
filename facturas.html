@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Facturación y Cobro</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+</head>
+<body>
+
+    <!-- Menu común -->
+    <div class="sidebar"></div>
+
+    <!--principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Facturación y Liquidación de Órdenes</h1>
+                <p class="header-subtitle">Emisión de facturas detalladas, cálculo automático de repuestos y mano de obra</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <div class="factura-grid-layout">
+            
+            <!--  emisión de factura -->
+            <div class="card" style="border-left-color: var(--success);">
+                <h2 style="font-size: 1.25rem; margin-bottom: 16px;">Emitir Nueva Factura</h2>
+
+                <div class="form-group">
+                    <label for="ordenFacturaSelect">Seleccionar Orden de Trabajo *</label>
+                    <select id="ordenFacturaSelect">
+                        <option value="">-- Seleccionar Orden para Facturar --</option>
+                    </select>
+                </div>
+
+                <div id="contenedor-aviso-existente" style="display: none; margin-bottom: 16px;"></div>
+
+                <div id="formulario-factura-detalles" style="display: none;">
+                    
+                    <!-- resumen del cliente y equipo -->
+                    <div class="summary-box">
+                        <p><strong>Cliente:</strong> <span id="factura-cliente-nombre">-</span></p>
+                        <p><strong>Dispositivo:</strong> <span id="factura-equipo-desc">-</span></p>
+                        <p><strong>Técnico Responsable:</strong> <span id="factura-tecnico-nombre">-</span></p>
+                    </div>
+
+                    <!-- tab de repuestos utilizados -->
+                    <h3 style="font-size: 1rem; margin-bottom: 8px;">Detalle de Repuestos Consumidos</h3>
+                    <div style="overflow-x: auto; margin-bottom: 16px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Repuesto</th>
+                                    <th>Cant.</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-repuestos-factura">
+                                <tr>
+                                    <td colspan="4" class="empty-state-card" style="padding: 8px;">Sin repuestos consumidos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <form id="formGenerarFactura">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="costoManoObra">Costo de Mano de Obra (Q) *</label>
+                                <input type="number" id="costoManoObra" step="0.01" min="0" value="150.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="metodoPago">Método de Pago *</label>
+                                <select id="metodoPago" required>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="Tarjeta">Tarjeta (Crédito / Débito)</option>
+                                    <option value="Transferencia">Transferencia Bancaria</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- desglose de cálculo auto -->
+                        <div class="alert-box-success" style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.95rem;">
+                                <span>Subtotal Repuestos:</span>
+                                <span id="calc-repuestos" style="font-weight: bold;">Q0.00</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.95rem;">
+                                <span>Mano de Obra:</span>
+                                <span id="calc-mano-obra" style="font-weight: bold;">Q150.00</span>
+                            </div>
+                            <hr style="border: none; border-top: 1px solid rgba(16, 185, 129, 0.4); margin: 8px 0;">
+                            <div style="display: flex; justify-content: space-between; font-size: 1.3rem;">
+                                <strong>TOTAL A PAGAR:</strong>
+                                <strong id="calc-total-final" style="color: #34d399;">Q150.00</strong>
+                            </div>
+                        </div>
+
+                        <div class="cell-actions">
+                            <button type="submit" class="btn btn-success" id="btnEmitirFactura" style="flex: 1;">
+                                Generar y Emitir Factura
+                            </button>
+                            <button type="button" class="btn btn-primary" id="btnImprimirFacturaDirecta" style="display: none;" onclick="imprimirFacturaActual()">
+                                Imprimir Factura
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+            <!-- historial de facturas emitidas -->
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Facturas Emitidas</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="cargarFacturasEmitidas()">Actualizar</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No Factura</th>
+                            <th>Orden</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Pago</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-facturas-emitidas">
+                        <tr>
+                            <td colspan="6" class="empty-state-card">Cargando facturas</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Factura  -->
+    <div id="seccion-factura-imprimir">
+    
+        <h2>TechFix ERP S.A.</h2>
+        <p>NIT: 1049283-4 | Tel: 7941-2000 | Zacapa, Guatemala</p>
+        <hr>
+    
+        <h3>FACTURA DE SERVICIO</h3>
+        <p><b id="print-fac-numero">#FAC-000</b></p>
+        <p id="print-fac-fecha">Fecha: 01/01/2026</p>
+        <hr>
+    
+        <p><b>Datos del cliente</b></p>
+        <table>
+            <tr>
+                <td><b>Nombre:</b></td>
+                <td id="print-fac-cliente"></td>
+            </tr>
+            <tr>
+                <td><b>Teléfono:</b></td>
+                <td id="print-fac-telefono"></td>
+            </tr>
+            <tr>
+                <td><b>Correo:</b></td>
+                <td id="print-fac-correo"></td>
+            </tr>
+        </table>
+    
+        <p><b>Datos del equipo</b></p>
+        <table>
+            <tr>
+                <td><b>N° Orden:</b></td>
+                <td id="print-fac-orden"></td>
+            </tr>
+            <tr>
+                <td><b>Dispositivo:</b></td>
+                <td id="print-fac-equipo"></td>
+            </tr>
+            <tr>
+                <td><b>Serie:</b></td>
+                <td id="print-fac-serie"></td>
+            </tr>
+        </table>
+    
+        <hr>
+    
+        <table border="1" width="100%">
+            <thead>
+                <tr>
+                    <th>Cant.</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody id="print-fac-items">
+              
+            </tbody>
+        </table>
+    
+        <hr>
+    
+        <p><b>Método de pago:</b> <span id="print-fac-metodo"></span></p>
+        <p>Subtotal repuestos: <b id="print-fac-sub-rep">Q0.00</b></p>
+        <p>Mano de obra: <b id="print-fac-sub-mo">Q0.00</b></p>
+        <h3>TOTAL: <span id="print-fac-total">Q0.00</span></h3>
+    
+        <p>Garantía de reparación: 30 días por mano de obra.</p>
+    
+        <br><br>
+        <p>_____________________ &nbsp;&nbsp;&nbsp;&nbsp; _____________________</p>
+        <p>Firma del Cliente &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Firma del
+            Técnico</p>
+    
+        </div>
+
+    <script src="JS/api.js"></script>
+    <script src="JS/facturas.js"></script>
+</body>
+</html>

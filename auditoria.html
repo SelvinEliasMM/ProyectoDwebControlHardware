@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Auditoría y Trazabilidad</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+</head>
+<body>
+
+    <!-- Menú lateral común -->
+    <div class="sidebar"></div>
+
+    <!--  principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Auditoría y Trazabilidad Inmutable</h1>
+                <p class="header-subtitle">Bitácora cronológica de operaciones y trazabilidad de cambios de estado protegida por triggers</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <!-- Pestañas aud-->
+        <div class="tab-container">
+            <button class="tab-btn active" id="tab-estados-btn" onclick="cambiarTabAuditoria('estados')">
+                <img src="imgs/1785039-ff5722.svg" alt="" class="btn-icon-img"> Historial de Estados de Órdenes
+            </button>
+            <button class="tab-btn" id="tab-bitacora-btn" onclick="cambiarTabAuditoria('bitacora')">
+                <img src="imgs/activity.svg" alt="" class="btn-icon-img"> Bitácora General del Sistema
+            </button>
+        </div>
+
+        <!-- historial de estados órdenes -->
+        <div id="seccion-estados">
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="form-row" style="align-items: center; margin-bottom: 0;">
+                    <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                        <label for="ordenAuditoriaSelect">Consultar Trazabilidad de la Orden:</label>
+                        <select id="ordenAuditoriaSelect">
+                            <option value="">-- Seleccionar Orden de Trabajo --</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1; text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="cargarHistorialOrdenSeleccionada()">
+                            Refrescar Historial
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2 id="titulo-historial-orden">Línea de Tiempo de Cambios de Estado</h2>
+                    <span class="badge ready">
+                        Registros Inmutables
+                    </span>
+                </div>
+                <p class="header-subtitle" style="margin-bottom: 16px;">
+                    Registro automático con marca de tiempo y usuario responsable para cada transición de estado de reparación.
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora Exacta</th>
+                            <th>Estado Anterior</th>
+                            <th>Nuevo Estado</th>
+                            <th>Usuario Responsable</th>
+                            <th>Rol</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historial-estados">
+                        <tr>
+                            <td colspan="6" class="empty-state-card">Seleccione una orden para ver su trazabilidad.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- bitácora general de auditoría -->
+        <div id="seccion-bitacora" style="display: none;">
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Bitácora de Operaciones del Sistema (Últimos 100 Registros)</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="cargarBitacoraGeneral()">Actualizar Bitácora</button>
+                </div>
+                <p class="header-subtitle" style="margin-bottom: 16px;">
+                    Auditoría integral de base de datos protegida ante modificaciones o eliminaciones.
+                </p>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha / Hora</th>
+                            <th>Tabla</th>
+                            <th>Operación</th>
+                            <th>ID Registro</th>
+                            <th>Usuario</th>
+                            <th>Detalle de Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-bitacora-general">
+                        <tr>
+                            <td colspan="6" class="empty-state-card">Cargando bitácora general...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="JS/api.js"></script>
+    <script src="JS/auditoria.js"></script>
+</body>
+</html>

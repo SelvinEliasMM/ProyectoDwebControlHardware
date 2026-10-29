@@ -2,36 +2,105 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>ERP Hardware | Equipos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP - Registro de Equipos</title>
     <link rel="stylesheet" href="CSS/estilos.css">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo">TechFix ERP</div>
-        <div class="menu-item"><a href="index.html" style="color:inherit; text-decoration:none;">Dashboard</a></div>
-        <div class="menu-item active">Registro de Equipos</div>
-        <div class="menu-item"><a href="clientes.html" style="color:inherit; text-decoration:none;">Clientes</a></div>
-      
-    </div>
-    
+
+    <!-- Menú-->
+    <div class="sidebar"></div>
+
+    <!-- principal -->
     <div class="main-content">
-        <h2>Registrar Nuevo Equipo</h2>
-        <div class="card">
-            <form id="formEquipo">
-                <select id="clienteSelect" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;">
-                    <option value="">Cargando clientes...</option>
-                </select>
-                
-                <input type="text" id="tipo" placeholder="Tipo (ej. Laptop, Desktop)" required style="padding:8px; margin:5px; border-radius:5px;">
-                <input type="text" id="marca" placeholder="Marca y Modelo" required style="padding:8px; margin:5px; border-radius:5px;">
-                <input type="text" id="serie" placeholder="Número de Serie" required style="padding:8px; margin:5px; border-radius:5px;">
-                <textarea id="caracteristicas" placeholder="Características (RAM, Disco...)" required style="padding:8px; margin:5px; border-radius:5px; width: 100%;"></textarea>
-                
-                <button type="submit" style="padding:9px; background:#3b82f6; color:white; border:none; cursor:pointer; border-radius:5px;">Guardar Equipo</button>
-            </form>
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Registro de Equipos de Hardware</h1>
+                <p class="header-subtitle">Inventario de dispositivos ingresados por clientes al taller</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <div class="two-column-layout">
+            <!-- formulario de registro de equipo -->
+            <div class="card">
+                <h2 style="font-size: 1.2rem; margin-bottom: 16px;">Registrar Dispositivo</h2>
+
+                <form id="formEquipo">
+                    <div class="form-group">
+                        <label for="clienteSelect">Cliente Propietario *</label>
+                        <select id="clienteSelect" required>
+                            <option value="">Cargando clientes...</option>
+                        </select>
+                        <small class="field-help-text">
+                            ¿Cliente nuevo? <a href="clientes.html" class="field-link">Registrar cliente aquí</a>
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipo">Tipo de Dispositivo *</label>
+                        <select id="tipo" required>
+                            <option value="">-- Seleccionar Tipo --</option>
+                            <option value="Laptop">Laptop / Portátil</option>
+                            <option value="Desktop">Desktop / Computadora de Escritorio</option>
+                            <option value="Servidor">Servidor / Rack</option>
+                            <option value="Tarjeta de Video">Tarjeta de Video (GPU)</option>
+                            <option value="Placa Base">Tarjeta Madre / Motherboard</option>
+                            <option value="Consola">Consola de Videojuegos</option>
+                            <option value="Otro">Otro Dispositivo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="marca">Marca y Modelo *</label>
+                        <input type="text" id="marca" placeholder="Ej. ASUS ROG Strix G15" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="serie">Número de Serie Único *</label>
+                        <input type="text" id="serie" placeholder="Ej. SN-984321A8" required>
+                        <small class="field-help-text">Debe ser un identificador único e irrepetible.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caracteristicas">Especificaciones de Hardware</label>
+                        <textarea id="caracteristicas" rows="2" placeholder="Ej. CPU Ryzen 7 5800H, 16GB RAM DDR4, SSD 512GB NVMe, RTX 3060..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full" id="btnGuardarEquipo" style="margin-top: 10px;">
+                        Guardar Equipo
+                    </button>
+                </form>
+            </div>
+
+            <!-- List de equipos registrados -->
+            <div class="table-container">
+                <div class="table-header-flex">
+                    <h2>Inventario de Dispositivos</h2>
+                    <input type="text" id="buscarEquipo" placeholder="Filtrar por serie, marca o cliente..." class="search-input-field">
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Dispositivo</th>
+                            <th>N° Serie</th>
+                            <th>Cliente</th>
+                            <th>Especificaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-equipos">
+                        <tr>
+                            <td colspan="5" class="empty-state-card">Cargando catálogo de equipos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <script src="JS/api.js"></script>
     <script src="JS/equipos.js"></script>
 </body>
 </html>

@@ -2,43 +2,90 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #121826;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #0f2552, #050d22);
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
 }
 
 .login-box {
-    background: #1f2937;
-    padding: 40px;
-    border-radius: 10px;
-    width: 100%;
-    max-width: 400px;
+    background: #142245;
+    padding: 36px 32px;
+    border-radius: 14px;
+    border: 1px solid #233b6e;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
-.login-box h1 {
-    color: #3b82f6;
-    margin-bottom: 20px;
+.login-logo-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
-.login-box input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    background: #374151;
-    border: 1px solid #4b5563;
-    color: white;
-    border-radius: 5px;
+.login-logo-img {
+    width: 125px;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #233b6e;
 }
 
-.login-box button {
-    width: 100%;
-    padding: 12px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    margin-top: 15px;
+.login-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #10b981;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.login-box h2 {
+    color: #ffffff;
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: #9ba8c0;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.credentials-tip {
+    margin-top: 24px;
+    border-top: 1px solid #233b6e;
+    background: rgba(15, 37, 82, 0.5);
+    border-radius: 8px;
+    padding: 14px;
+    text-align: left;
+}
+
+.credentials-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.credentials-list {
+    font-size: 0.8rem;
+    color: #9ca8c0;
+    line-height: 1.6;
+}
+
+.credentials-list code {
+    background: #0d1e3d;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #34d399;
 }

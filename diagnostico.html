@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFix ERP  Diagnóstico y Taller de Reparación</title>
+    <link rel="stylesheet" href="CSS/estilos.css">
+</head>
+<body>
+
+    <!-- Menú lateral -->
+    <div class="sidebar"></div>
+
+    <!--principal -->
+    <div class="main-content">
+        <div class="header">
+            <div class="header-title-box">
+                <h1>Diagnóstico y Taller de Hardware</h1>
+                <p class="header-subtitle">Atención técnica, consumo de repuestos en órdenes y actualización de estados</p>
+            </div>
+            <div class="user-info"></div>
+        </div>
+
+        <!-- Selector orden activa -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="form-row" style="align-items: center; margin-bottom: 0;">
+                <div class="form-group" style="flex: 2; margin-bottom: 0;">
+                    <label for="ordenSelect" style="color: #ffffff;">Seleccionar Orden de Trabajo para Atención Técnica:</label>
+                    <select id="ordenSelect">
+                        <option value="">-- Cargando órdenes activas del taller --</option>
+                    </select>
+                </div>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                    <button class="btn btn-secondary btn-sm" onclick="cargarOrdenesTaller()">Refrescar Órdenes</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel cuando no se ha seleccionado ninguna orden -->
+        <div id="panel-sin-seleccion" class="empty-state-card">
+            <img src="imgs/1093183-3f51b5.svg" alt="" class="empty-state-icon">
+            <h3>Seleccione una orden de trabajo para ver los detalles técnicos y gestionar el taller.</h3>
+        </div>
+
+        <!-- Panel de trabajo de la orden seleccionada -->
+        <div id="panel-orden-activa" style="display: none;">
+            
+            <!-- banner informativo de respaldo de datos -->
+            <div id="banner-respaldo-alerta" style="display: none;"></div>
+
+            <div class="dashboard-cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+                <div class="card" style="padding: 16px;">
+                    <h3>Orden / Ticket</h3>
+                    <div id="info-ticket" style="font-size: 1.5rem; font-weight: bold; color: #60a5fa;">-</div>
+                </div>
+                <div class="card" style="padding: 16px;">
+                    <h3>Cliente</h3>
+                    <div id="info-cliente" style="font-size: 1.1rem; font-weight: bold;">-</div>
+                </div>
+                <div class="card" style="padding: 16px;">
+                    <h3>Dispositivo</h3>
+                    <div id="info-equipo" style="font-size: 1.1rem; font-weight: bold;">-</div>
+                </div>
+                <div class="card" style="padding: 16px;">
+                    <h3>Estado Actual</h3>
+                    <div id="info-estado" style="font-size: 1.1rem; font-weight: bold;">-</div>
+                </div>
+            </div>
+
+            <!-- distribución de operaciones tecnicas -->
+            <div class="taller-grid-layout" style="margin-bottom: 24px;">
+                
+                <!-- Diagnóstico técnico y estado -->
+                <div>
+                    <!-- Formulario de diagnóstico -->
+                    <div class="card" style="margin-bottom: 20px;">
+                        <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Registro de Diagnóstico Técnico</h2>
+                        <form id="formDiagnostico">
+                            <div class="form-group">
+                                <label for="diagnosticoTecnico">Hallazgos Técnicos / Evaluación *</label>
+                                <textarea id="diagnosticoTecnico" rows="3" placeholder="Detalle las pruebas realizadas y componentes defectuosos detectados..." required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="solucionPropuesta">Solución Propuesta / Procedimiento</label>
+                                <textarea id="solucionPropuesta" rows="2" placeholder="Reemplazo de componente, soldadura, limpieza, reinstalación..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-full" id="btnGuardarDiagnostico">
+                                Guardar Diagnóstico y Marcar "En Diagnóstico"
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- actualización de estado de reparacion -->
+                    <div class="card">
+                        <h2 style="font-size: 1.2rem; margin-bottom: 12px;">Estado de Reparación</h2>
+                        <p class="field-help-text" style="margin-bottom: 14px;">
+                            Solo el técnico asignado a esta orden o un Administrador tienen autorización para modificar su estado.
+                        </p>
+                        
+                        <div class="cell-actions">
+                            <button class="btn btn-warning" onclick="cambiarEstadoOrden('En Diagnóstico')">
+                                En Diagnóstico
+                            </button>
+                            <button class="btn btn-success" onclick="cambiarEstadoOrden('Reparado')">
+                                Marcar Reparado
+                            </button>
+                            <button class="btn btn-secondary" onclick="cambiarEstadoOrden('Entregado')">
+                                Marcar Entregado
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- historial de notas de diagnostico -->
+                    <div class="card" style="margin-top: 20px;">
+                        <h3 style="margin-bottom: 10px;">Historial de Notas de Diagnóstico</h3>
+                        <div id="lista-diagnosticos" style="display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                            <!-- dinamic -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- consumo de repuestos -->
+                <div>
+                    <div class="card" style="border-left-color: var(--success);">
+                        <h2 style="font-size: 1.2rem; margin-bottom: 14px;">Consumo de Repuestos</h2>
+                        <p class="field-help-text" style="margin-bottom: 14px;">
+                            Al asignar un repuesto a la orden, las existencias se descuentan automáticamente y se genera su registro en el Kardex.
+                        </p>
+
+                        <form id="formAsignarRepuesto">
+                            <div class="form-group">
+                                <label for="repuestoSelect">Repuesto a Utilizar *</label>
+                                <select id="repuestoSelect" required>
+                                    <option value="">-- Seleccionar Repuesto en Stock --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="cantidadRepuesto">Cantidad *</label>
+                                    <input type="number" id="cantidadRepuesto" min="1" value="1" required>
+                                </div>
+                                <div class="form-group" style="display: flex; align-items: flex-end;">
+                                    <button type="submit" class="btn btn-success btn-full" id="btnAsignarRepuesto">
+                                        Consumir Repuesto
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 18px 0;">
+
+                        <h3 style="font-size: 1rem; margin-bottom: 10px;">Repuestos Asignados a Esta Orden</h3>
+                        <div style="overflow-x: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Repuesto</th>
+                                        <th>Cant.</th>
+                                        <th>P. Unitario</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-repuestos-orden">
+                                    <tr>
+                                        <td colspan="4" class="empty-state-card" style="padding: 10px;">No se han consumido repuestos.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin-top: 14px; text-align: right; font-size: 1.1rem;">
+                            <strong>Total Repuestos: </strong>
+                            <span id="total-repuestos-monto" style="color: #34d399; font-weight: bold;">Q0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="JS/api.js"></script>
+    <script src="JS/diagnostico.js"></script>
+</body>
+</html>
