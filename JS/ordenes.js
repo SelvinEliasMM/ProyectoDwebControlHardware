@@ -105,7 +105,7 @@ document.getElementById('formOrden').addEventListener('submit', async function(e
         ordenGeneradaCache = ordenGuardada;
 
         mostrarModalTicket(ordenGuardada);
-        mostrarNotificacion(`Orden #ORD-${ordenGuardada.idOrden} generada exitosamente.`, 'success');
+        mostrarNotificacion(`Orden generada. Código: ${ordenGuardada.tokenSeguimiento}`, 'success');
         document.getElementById('formOrden').reset();
     } catch (err) {
         console.error('Error al generar orden:', err);
@@ -122,12 +122,14 @@ function mostrarModalTicket(orden) {
     const equipo = equiposCache.find(e => e.idEquipo === (orden.idEquipo ? orden.idEquipo.idEquipo : null)) || (orden.idEquipo || {});
     const cliente = equipo.idCliente || {};
     const tecnico = usuariosCache.find(u => u.idUsuario === (orden.idUsuarioTecnico ? orden.idUsuarioTecnico.idUsuario : null)) || (orden.idUsuarioTecnico || {});
+    const token = orden.tokenSeguimiento || 'Sin código';
 
     modalBody.innerHTML = `
         <div class="ticket-number-badge">
-            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 4px;">NÚMERO DE TICKET AUTOGENERADO:</p>
-            <div class="ticket-number-display">#ORD-${orden.idOrden}</div>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Entregue este número al cliente para el seguimiento de su equipo.</p>
+            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 4px;">CÓDIGO DE SEGUIMIENTO:</p>
+            <div class="ticket-number-display">${token}</div>
+            <div id="modal-exito-qr" class="qr-box"></div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Orden interna #ORD-${orden.idOrden}. Entregue el código o QR al cliente para el seguimiento.</p>
         </div>
 
         <div class="summary-box">
@@ -141,7 +143,7 @@ function mostrarModalTicket(orden) {
         </div>
     `;
 
-    document.getElementById('ticket-print-id').innerText = `#ORD-${orden.idOrden}`;
+    document.getElementById('ticket-print-id').innerText = token;
     document.getElementById('ticket-print-fecha').innerText = formatearFecha(orden.fechaIngreso || new Date());
     document.getElementById('ticket-print-cliente').innerText = cliente.nombreCliente || 'N/A';
     document.getElementById('ticket-print-equipo').innerText = equipo.marcaModelo || 'N/A';
@@ -150,6 +152,11 @@ function mostrarModalTicket(orden) {
     document.getElementById('ticket-print-respaldo').innerText = orden.requiereRespaldo ? 'SÍ (REQUERIDO - NO BORRAR INFORMACIÓN)' : 'NO';
     document.getElementById('ticket-print-problema').innerText = orden.problemaReportado || 'N/A';
     document.getElementById('ticket-print-notas').innerText = orden.notasEspeciales || 'Sin notas especiales';
+    document.getElementById('ticket-print-token').innerText = token;
+
+    // qr con el token
+    generarQRTicket('modal-exito-qr', orden.tokenSeguimiento, 130);
+    generarQRTicket('ticket-print-qr', orden.tokenSeguimiento, 150);
 
     document.getElementById('modal-ticket-generado').classList.add('active');
 }

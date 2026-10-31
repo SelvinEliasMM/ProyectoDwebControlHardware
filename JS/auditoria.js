@@ -120,27 +120,6 @@ function cargarHistorialOrdenSeleccionada() {
     }
 }
 
-// formatea texto o json de bitacora
-function limpiarTextoBitacora(raw) {
-    if (!raw) return '';
-    const txt = String(raw).trim();
-    if (txt.startsWith('[') || txt.startsWith('{')) {
-        try {
-            const parsed = JSON.parse(txt);
-            const obj = Array.isArray(parsed) ? parsed[0] : parsed;
-            if (obj && typeof obj === 'object') {
-                return Object.entries(obj)
-                    .filter(([k, v]) => v !== null && v !== '' && !k.includes('fecha'))
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join(' | ');
-            }
-        } catch (e) {
-            return txt;
-        }
-    }
-    return txt;
-}
-
 // obtiene id de registro afectado
 function obtenerIdRegistroBitacora(b) {
     const raw = b.datosNuevos || b.datosOriginales || '';
@@ -160,14 +139,14 @@ function obtenerIdRegistroBitacora(b) {
 // Carga registros de la bitácora general de base de datos
 async function cargarBitacoraGeneral() {
     const tbody = document.getElementById('tabla-bitacora-general');
-    tbody.innerHTML = `<tr><td colspan="6" class="empty-state-card">Consultando registros de auditoría...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state-card">Consultando registros de auditoría...</td></tr>`;
 
     try {
         const data = await apiFetch('/auditoria/bitacora');
         const logs = data || [];
 
         if (logs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="empty-state-card">No hay registros en la bitácora aún.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="empty-state-card">No hay registros en la bitácora aún.</td></tr>`;
             return;
         }
 
@@ -181,9 +160,6 @@ async function cargarBitacoraGeneral() {
 
             const usuario = b.idUsuario ? b.idUsuario.nombreCompleto : 'Sistema';
             const idReg = obtenerIdRegistroBitacora(b);
-            const nuevos = limpiarTextoBitacora(b.datosNuevos || b.valoresNuevos);
-            const orig = limpiarTextoBitacora(b.datosOriginales || b.valoresAnteriores);
-            const detalle = nuevos || orig || 'Operación registrada';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -192,15 +168,12 @@ async function cargarBitacoraGeneral() {
                 <td><span class="${opBadge}">${accion}</span></td>
                 <td>#${idReg}</td>
                 <td><strong>${usuario}</strong></td>
-                <td style="font-size:0.82rem; color:var(--text-muted); max-width:340px;">
-                    ${detalle}
-                </td>
             `;
             tbody.appendChild(tr);
         });
     } catch (err) {
         console.error('Error al cargar bitácora general:', err);
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 20px;">Error al cargar bitácora del sistema.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #ef4444; padding: 20px;">Error al cargar bitácora del sistema.</td></tr>`;
     }
 }
 

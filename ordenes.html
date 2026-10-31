@@ -107,7 +107,7 @@
             <p style="margin: 2px 0 0 0; font-size: 11px; color:#555;">Servicio Especializado de Diagnóstico y Reparación de Hardware</p>
         </div>
         <div style="font-size: 13px; line-height: 1.8;">
-            <p><strong>N° TICKET / ORDEN:</strong> <span id="ticket-print-id" style="font-size:16px; font-weight:bold;"></span></p>
+            <p><strong>CÓDIGO DE SEGUIMIENTO:</strong> <span id="ticket-print-id" style="font-size:16px; font-weight:bold;"></span></p>
             <p><strong>Fecha y Hora de Ingreso:</strong> <span id="ticket-print-fecha"></span></p>
             <p><strong>Cliente:</strong> <span id="ticket-print-cliente"></span></p>
             <p><strong>Equipo:</strong> <span id="ticket-print-equipo"></span></p>
@@ -120,12 +120,18 @@
             <p><strong>Notas Especiales / Observaciones:</strong></p>
             <div id="ticket-print-notas" style="background: #f3f4f6; padding: 10px; border-radius: 4px; border: 1px solid #ddd;"></div>
         </div>
+        <div class="ticket-qr-print">
+            <div id="ticket-print-qr" class="qr-box"></div>
+            <p style="font-size: 12px;">Escanee el código QR o ingrese el código en el portal de seguimiento</p>
+            <p class="ticket-token" id="ticket-print-token"></p>
+        </div>
         <div style="text-align: center; border-top: 2px dashed #000; margin-top: 24px; padding-top: 12px; font-size: 11px;">
             <p><strong>IMPORTANTE:</strong> Presente este comprobante indispensablemente para retirar su equipo.</p>
             <p>Gracias por su preferencia.</p>
         </div>
     </div>
 
+    <script src="JS/lib/qrcode.min.js"></script>
     <script src="JS/api.js"></script>
     <script src="JS/ordenes.js"></script>
 </body>

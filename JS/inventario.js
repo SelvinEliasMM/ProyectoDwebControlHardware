@@ -2,18 +2,13 @@
 let repuestosCache = [];
 let kardexCache = [];
 
-// Inicializa el catálogo y la visualización de existencias
+// inic modulo solo para admin
 async function inicializarModuloInventario() {
-    const usuario = verificarSesion();
+    const usuario = verificarSesion(['Administrador']);
     if (!usuario) return;
 
     renderSidebar('inventario');
     renderHeaderUsuario();
-
-    if (usuario.rol !== 'Administrador') {
-        const btnNuevo = document.getElementById('btnNuevoRepuestoModal');
-        if (btnNuevo) btnNuevo.style.display = 'none';
-    }
 
     await cargarCatalogoRepuestos();
     configurarBuscadorRepuestos();

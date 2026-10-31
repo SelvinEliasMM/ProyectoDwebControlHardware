@@ -363,6 +363,42 @@ select option {
     letter-spacing: 1px;
 }
 
+/* qr y token del ticket */
+.qr-box {
+    display: flex;
+    justify-content: center;
+    margin: 12px auto 4px;
+}
+
+.qr-box img,
+.qr-box canvas {
+    background: #fff;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.ticket-token {
+    font-family: Consolas, monospace;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #60a5fa;
+}
+
+.ticket-qr-print {
+    text-align: center;
+    margin: 14px 0;
+}
+
+.ticket-qr-print .qr-box img,
+.ticket-qr-print .qr-box canvas {
+    padding: 0;
+}
+
+.ticket-qr-print .ticket-token {
+    color: #000;
+    font-size: 18px;
+}
+
 .empty-state-card {
     text-align: center;
     padding: 48px 24px;

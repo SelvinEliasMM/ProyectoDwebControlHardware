@@ -97,7 +97,7 @@
     
         <table>
             <tr>
-                <td><b>Ticket N°:</b></td>
+                <td><b>Código de seguimiento:</b></td>
                 <td id="ticket-id"></td>
             </tr>
             <tr>
@@ -117,7 +117,7 @@
                 <td id="ticket-equipo"></td>
             </tr>
             <tr>
-                <td><b>N° de Serie:</b></td>
+                <td><b>No de Serie:</b></td>
                 <td id="ticket-serie"></td>
             </tr>
             <tr>
@@ -139,6 +139,12 @@
         <p id="ticket-notas"></p>
     
         <hr>
+
+        <div class="ticket-qr-print">
+            <div id="ticket-print-qr" class="qr-box"></div>
+            <p>Escanee el código QR o ingrese el código en el portal de seguimiento</p>
+            <p class="ticket-token" id="ticket-print-token"></p>
+        </div>
     
         <p><b>Importante:</b> Presente este comprobante para retirar su equipo.</p>
         <p>Pasados 30 días del aviso de reparación, el taller no se hace responsable por equipos no reclamados.</p>
@@ -146,6 +152,7 @@
     
         </div>
 
+    <script src="JS/lib/qrcode.min.js"></script>
     <script src="JS/api.js"></script>
     <script src="JS/index.js"></script>
 </body>

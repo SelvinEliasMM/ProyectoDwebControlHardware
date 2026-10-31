@@ -122,16 +122,16 @@ function renderSidebar(activePage = '') {
                 <span>Diagnóstico y Taller</span>
             </a>
         </div>
-        <div class="menu-item ${activePage === 'inventario' ? 'active' : ''}">
-            <a href="inventario.html">
-                <img src="imgs/box.svg" alt="" class="menu-icon">
-                <span>Inventario y Kardex</span>
-            </a>
-        </div>
     `;
 
     if (esAdmin) {
         html += `
+            <div class="menu-item ${activePage === 'inventario' ? 'active' : ''}">
+                <a href="inventario.html">
+                    <img src="imgs/box.svg" alt="" class="menu-icon">
+                    <span>Inventario y Kardex</span>
+                </a>
+            </div>
             <div class="menu-item ${activePage === 'clientes' ? 'active' : ''}">
                 <a href="clientes.html">
                     <img src="imgs/309094-3f51b5.svg" alt="" class="menu-icon">
@@ -227,4 +227,27 @@ function formatearFecha(fechaStr) {
 function formatearMoneda(monto) {
     const val = parseFloat(monto) || 0;
     return `Q${val.toFixed(2)}`;
+}
+
+// url base para el qr (poner ip de la red si se escanea desde cel, ej: 'http://192.168.1.10:5501/')
+const URL_BASE_SEGUIMIENTO = '';
+
+// arma link de seguimiento con token
+function urlSeguimiento(token) {
+    const base = URL_BASE_SEGUIMIENTO || window.location.href;
+    return new URL(`seguimiento.html?token=${encodeURIComponent(token)}`, base).href;
+}
+
+// dibuja qr del ticket en un contenedor
+function generarQRTicket(contenedorId, token, tam = 140) {
+    const cont = document.getElementById(contenedorId);
+    if (!cont) return;
+    cont.innerHTML = '';
+    if (!token || typeof QRCode === 'undefined') return;
+    new QRCode(cont, {
+        text: urlSeguimiento(token),
+        width: tam,
+        height: tam,
+        correctLevel: QRCode.CorrectLevel.M
+    });
 }

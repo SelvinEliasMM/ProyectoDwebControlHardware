@@ -10,6 +10,15 @@ async function inicializarDashboard() {
     renderSidebar('dashboard');
     renderHeaderUsuario();
 
+    if (usuario.rol !== 'Administrador') {
+        const badgeStock = document.getElementById('count-stock-bajo');
+        if (badgeStock && badgeStock.parentElement) {
+            badgeStock.parentElement.style.display = 'none';
+        }
+        await cargarOrdenesDashboard(usuario);
+        return;
+    }
+
     await Promise.all([
         cargarOrdenesDashboard(usuario),
         cargarAlertasStock()
@@ -117,13 +126,15 @@ function verTicket(idOrden) {
     const cliente = orden.idEquipo && orden.idEquipo.idCliente ? orden.idEquipo.idCliente : {};
     const equipo = orden.idEquipo || {};
     const tecnico = orden.idUsuarioTecnico ? orden.idUsuarioTecnico.nombreCompleto : 'No asignado';
+    const token = orden.tokenSeguimiento || 'Sin código';
 
     modalBody.innerHTML = `
         <div class="summary-box">
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="font-size:1.1rem; font-weight:bold; color:#60a5fa;">Ticket #ORD-${orden.idOrden}</span>
+                <span style="font-size:1.1rem; font-weight:bold; color:#60a5fa;">Orden #ORD-${orden.idOrden}</span>
                 <span class="badge ${orden.estadoReparacion === 'Reparado' ? 'ready' : 'diag'}">${orden.estadoReparacion}</span>
             </div>
+            <p><strong>Código de seguimiento:</strong> <span class="ticket-token">${token}</span></p>
             <p><strong>Fecha de Ingreso:</strong> ${formatearFecha(orden.fechaIngreso)}</p>
             <p><strong>Cliente:</strong> ${cliente.nombreCliente || 'N/A'} (Tel: ${cliente.telefono || 'N/A'})</p>
             <p><strong>Equipo:</strong> ${equipo.marcaModelo || 'N/A'} - <strong>Serie:</strong> ${equipo.numeroSerie || 'N/A'}</p>
@@ -140,10 +151,11 @@ function verTicket(idOrden) {
             <strong>Notas Especiales:</strong>
             <p class="summary-box" style="margin-top:4px;">${orden.notasEspeciales || 'Ninguna especificación adicional'}</p>
         </div>
+        <div id="modal-ticket-qr" class="qr-box"></div>
     `;
 
     // dTOS Carga plantilla de impresión física
-    document.getElementById('ticket-id').innerText = `#ORD-${orden.idOrden}`;
+    document.getElementById('ticket-id').innerText = token;
     document.getElementById('ticket-fecha').innerText = formatearFecha(orden.fechaIngreso);
     document.getElementById('ticket-cliente').innerText = cliente.nombreCliente || 'N/A';
     document.getElementById('ticket-telefono').innerText = cliente.telefono || 'N/A';
@@ -153,6 +165,11 @@ function verTicket(idOrden) {
     document.getElementById('ticket-respaldo').innerText = orden.requiereRespaldo ? 'SÍ (REQUERIDO POR CLIENTE)' : 'NO';
     document.getElementById('ticket-problema').innerText = orden.problemaReportado || 'N/A';
     document.getElementById('ticket-notas').innerText = orden.notasEspeciales || 'Sin notas especiales';
+    document.getElementById('ticket-print-token').innerText = token;
+
+    // qr con el token
+    generarQRTicket('modal-ticket-qr', orden.tokenSeguimiento, 130);
+    generarQRTicket('ticket-print-qr', orden.tokenSeguimiento, 150);
 
     document.getElementById('modal-ticket').classList.add('active');
 }
